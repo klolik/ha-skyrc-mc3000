@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from skyrc_ble.models import ChannelStatus
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -19,7 +21,6 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-
 
 @dataclass(frozen=True)
 class SkyrcSensorDescription(SensorEntityDescription):
@@ -115,6 +116,8 @@ CHANNEL_SENSORS: tuple[SkyrcSensorDescription, ...] = (
         name="Status",
         icon="mdi:information-outline",
         value_fn=lambda ch: _enum_value(_channel_value(ch, "status")),
+        device_class=SensorDeviceClass.ENUM,
+        options=[v.name.lower() for v in ChannelStatus],
     ),
     SkyrcSensorDescription(
         key="battery_type",
@@ -210,6 +213,7 @@ class SkyrcMc3000BaseSensor(CoordinatorEntity, SensorEntity):
             self.entity_description_custom = description
             self._attr_native_unit_of_measurement = description.native_unit_of_measurement
             self._attr_device_class = description.device_class
+            self._attr_options = description.options
             self._attr_state_class = description.state_class
             self._attr_icon = description.icon
             self._attr_entity_category = description.entity_category
